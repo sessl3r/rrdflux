@@ -24,6 +24,7 @@ def main(argv):
    user=""
    password=""
    device=""
+   timens=1
 
    def help():
       print('Usage: rddflux.py [-u|-m] -f <RRD FILE> [-H <INFLUXDB HOST>] [-p <INFLUXDB PORT>] -d DATABASE [-U user] [-P password] [-k KEY] -D device [-h] ')
@@ -39,6 +40,7 @@ def main(argv):
       print('	-P, --password		Optional. Database password.')
       print('	-k, --key		Optional. Key used to store data values. Taken from RRD file\'s name if not specified.')
       print('	-D, --device		Device the RRD metrics are related with.')
+      print('   -t, --timens            Multiply RRD timeestamps to ns for influxdb')
    try:
       opts, args = getopt.getopt(argv,"humf:H:p:d:U:P:k:D:",["help=","update=","dump=","file=","host=","port=","database=","user=","password=","key=","device="])
    except getopt.GetoptError:
@@ -69,6 +71,8 @@ def main(argv):
          key = arg
       elif opt in ("-D", "--device"):
          device = arg
+      elif opt in ("t-", "--timens"):
+         timens = 1000 * 1000 * 1000
 
    if device == "" or fname == "" or db == "" or (update == False and dump == False) or (update == True and dump == True):
       print("ERROR: Missing or duplicated parameters.")
@@ -90,7 +94,7 @@ def main(argv):
       json_body = [
          {
             "measurement": device,
-            "time": unixts,
+            "time": unixts * timens,
             "fields": {
                 key: val,
             }
@@ -103,7 +107,7 @@ def main(argv):
       json_body = [
          {
             "measurement": device,
-            "time": unixts,
+            "time": unixts * timens,
             "fields": {
                 key: val,
             }
@@ -125,7 +129,7 @@ def main(argv):
          json_body = [
             {
                "measurement": device,
-               "time": unixts,
+               "time": unixts * timens,
                "fields": {
                    key: val,
                }
