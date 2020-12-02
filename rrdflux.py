@@ -129,20 +129,27 @@ def main(argv):
          '-r', str(RRD_MIN_RES))
       i=0
       while i < len(allvalues[2]):
-         val=allvalues[2][i][0]
-         unixts=allvalues[0][0]+(i+1)*RRD_MIN_RES
-         json_body = [
-            {
-               "measurement": device,
-               "time": unixts * timens,
-               "fields": {
-                   key: val,
-               }
-            }
-         ]
+         json_body = []
+         if i + 1024 < len(allvalues[2]):
+             loop = 1024
+         else:
+             loop = len(allvalues[2]) - i
+         for z in range(0, loop):
+             val=allvalues[2][i][0]
+             if val:
+                 unixts=allvalues[0][0]+(i+1)*RRD_MIN_RES
+                 json_body.append(
+                    {
+                       "measurement": device,
+                       "time": unixts * timens,
+                       "fields": {
+                           key: val,
+                       }
+                    }
+                 )
+             i=i+1
          client.write_points(json_body)
-         i=i+1
-
+         print("done {} of {}".format(i, len(allvalues[2])))
 
 if __name__ == "__main__":
    main(sys.argv[1:])
