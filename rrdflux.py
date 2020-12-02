@@ -12,7 +12,7 @@ from influxdb import InfluxDBClient
 
 def main(argv):
 
-   RRD_MIN_RES=300
+   RRD_MIN_RES=60
 
    update=False
    dump=False
