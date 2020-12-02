@@ -25,6 +25,7 @@ def main(argv):
    password=""
    device=""
    timens=1
+   start='-1y'
 
    def help():
       print('Usage: rddflux.py [-u|-m] -f <RRD FILE> [-H <INFLUXDB HOST>] [-p <INFLUXDB PORT>] -d DATABASE [-U user] [-P password] [-k KEY] -D device [-h] ')
@@ -40,9 +41,10 @@ def main(argv):
       print('	-P, --password		Optional. Database password.')
       print('	-k, --key		Optional. Key used to store data values. Taken from RRD file\'s name if not specified.')
       print('	-D, --device		Device the RRD metrics are related with.')
-      print('   -t, --timens            Multiply RRD timeestamps to ns for influxdb')
+      print('	-t, --timens		Multiply RRD timeestamps to ns for influxdb')
+      print('	-s, --start		RRD Start value, default -1y')
    try:
-      opts, args = getopt.getopt(argv,"humf:H:p:d:U:P:k:D:",["help=","update=","dump=","file=","host=","port=","database=","user=","password=","key=","device="])
+       opts, args = getopt.getopt(argv,"htumf:H:p:d:U:P:k:D:s:",["help=","timens","update=","dump=","file=","host=","port=","database=","user=","password=","key=","device=","start="])
    except getopt.GetoptError:
       help()
       sys.exit(2)
@@ -71,8 +73,10 @@ def main(argv):
          key = arg
       elif opt in ("-D", "--device"):
          device = arg
-      elif opt in ("t-", "--timens"):
+      elif opt in ("-t", "--timens"):
          timens = 1000 * 1000 * 1000
+      elif opt in ("-s", "--start"):
+         start = arg
 
    if device == "" or fname == "" or db == "" or (update == False and dump == False) or (update == True and dump == True):
       print("ERROR: Missing or duplicated parameters.")
@@ -120,6 +124,7 @@ def main(argv):
       allvalues = rrdtool.fetch(
          fname,
          "AVERAGE",
+         '-s', start,
          '-e', str(rrdtool.last(fname)-RRD_MIN_RES),
          '-r', str(RRD_MIN_RES))
       i=0
